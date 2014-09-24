@@ -20,7 +20,7 @@ module Data.XIntMap (
   empty,
   freshkey,
   freshkeys,
-  toIntmap,
+  toIntMap,
   size,
   touched,
   dirty,
@@ -69,7 +69,7 @@ intset_inserts list set =
 data XIntMap a = XIntMap !(IntMap a) !Int !IntSet !IntSet
 
 instance (Show a) => Show (XIntMap a) where
-  show = show . toIntmap
+  show = show . toIntMap
 
 -- | Delete a key from the 'XIntMap'.
 delete :: Int -> XIntMap a -> XIntMap a
@@ -129,8 +129,8 @@ freshkeys k (XIntMap _m n free _h) = ks1 ++ ks2 where
   ks2 = [n .. n+delta-1]
 
 -- | Convert a 'XIntMap' to an 'IntMap'.
-toIntmap :: XIntMap a -> IntMap a
-toIntmap (XIntMap m _n _free _h) = m
+toIntMap :: XIntMap a -> IntMap a
+toIntMap (XIntMap m _n _free _h) = m
 
 -- | Return the smallest key never used in the 'XIntMap'.
 size :: XIntMap a -> Int
