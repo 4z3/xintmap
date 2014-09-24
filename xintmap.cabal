@@ -1,0 +1,28 @@
+name: xintmap
+version: 0.6.0.1
+license: BSD3
+license-file: COPYRIGHT.quipper
+maintainer: tv@shackspace.de
+bug-reports: https://github.com/4z3/xintmap/issues
+synopsis: IntMap with some additional efficient operations
+category: Data Structures
+description:
+    This package contains 'XIntMap' from
+    <http://www.mathstat.dal.ca/~selinger/quipper/ Quipper>.
+
+build-type: Simple
+cabal-version:  >=1.8
+
+source-repository head
+    type:     git
+    location: http://github.com/4z3/xintmap
+
+Library
+    build-depends:
+        base,
+        containers
+
+    ghc-options: -O2 -Wall
+
+    exposed-modules:
+        Data.XIntMap
