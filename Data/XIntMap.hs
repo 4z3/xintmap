@@ -22,7 +22,9 @@ module Data.XIntMap (
   freshkeys,
   toIntmap,
   size,
+  touched,
   dirty,
+  reserve,
   reserves,
   unreserves,
   makeclean,
@@ -77,8 +79,8 @@ delete k (XIntMap m n free h) = (XIntMap m' n free' h) where
 
 -- | Delete a list of keys from a 'XIntMap'.
 deletes :: [Int] -> XIntMap a -> XIntMap a
-deletes list map =
-  foldl' (\map k -> delete k map) map list
+deletes list map1 =
+  foldl' (\map2 k -> delete k map2) map1 list
 
 -- | Insert a new key-value pair in the 'XIntMap'.
 insert :: Int -> a -> XIntMap a -> XIntMap a
@@ -90,18 +92,18 @@ insert k v (XIntMap m n free h) = (XIntMap m' n' free' h') where
 
 -- | Insert a list of key-value pairs in the 'XIntMap'.
 inserts :: [(Int,a)] -> XIntMap a -> XIntMap a
-inserts list map =
-  foldl' (\map (k,v) -> insert k v map) map list
+inserts list map1 =
+  foldl' (\map2 (k,v) -> insert k v map2) map1 list
 
 -- | Look up the value at a key in the 'XIntMap'. Return 'Nothing' if
 -- not found.
 lookup :: Int -> XIntMap a -> Maybe a
-lookup k (XIntMap m n free h) =
+lookup k (XIntMap m _n _free _h) =
   IntMap.lookup k m
 
 -- | Check whether the given key is in the 'XIntMap'.
 member :: Int -> XIntMap a -> Bool
-member k (XIntMap m n free h) =
+member k (XIntMap m _n _free _h) =
     IntMap.member k m
 
 -- | The empty 'XIntMap'.
@@ -115,32 +117,32 @@ empty = (XIntMap m n free h) where
 -- | Return the first free key in the 'XIntMap', but without actually
 -- using it yet.
 freshkey :: XIntMap a -> Int
-freshkey (XIntMap m n free h) =
+freshkey (XIntMap _m n free _h) =
   if IntSet.null free then n else IntSet.findMin free
 
 -- | Return the next /k/ unused keys in the 'XIntMap', but without
 -- actually using them yet.
 freshkeys :: Int -> XIntMap a -> [Int]
-freshkeys k (XIntMap m n free h) = ks1 ++ ks2 where
+freshkeys k (XIntMap _m n free _h) = ks1 ++ ks2 where
   ks1 = take k (IntSet.elems free)
   delta = k - (length ks1)
   ks2 = [n .. n+delta-1]
 
 -- | Convert a 'XIntMap' to an 'IntMap'.
 toIntmap :: XIntMap a -> IntMap a
-toIntmap (XIntMap m n free h) = m
+toIntmap (XIntMap m _n _free _h) = m
 
 -- | Return the smallest key never used in the 'XIntMap'.
 size :: XIntMap a -> Int
-size (XIntMap m n free k) = n
+size (XIntMap _m n _free _k) = n
 
 -- | Return the set of all keys ever used in the 'XIntMap'.
 touched :: XIntMap a -> IntSet
-touched (XIntMap m n free h) = h
+touched (XIntMap _m _n _free h) = h
 
 -- | A wire is /dirty/ if it is touched but currently free.
 dirty :: XIntMap a -> IntSet
-dirty (XIntMap m n free h) = h `IntSet.intersection` free
+dirty (XIntMap _m _n free h) = h `IntSet.intersection` free
 
 -- | Reserve a key in the 'XIntMap'. If the key is not free, do
 -- nothing. The key must have been used before; for example, this is
@@ -170,13 +172,13 @@ unreserve k (XIntMap m n free h)
 -- currently used, do nothing. All keys must have been reserved
 -- before, and (therefore) must have been used before.
 unreserves :: IntSet -> XIntMap a -> XIntMap a
-unreserves ks map =
-  IntSet.fold (\k map -> unreserve k map) map ks
+unreserves ks map1 =
+  IntSet.fold (\k map2 -> unreserve k map2) map1 ks
 
 -- | Make an exact copy of the 'XIntMap', except that the set of
 -- touched wires is initially set to the set of used wires. In other
 -- words, we mark all free and reserved wires as untouched.
 makeclean :: XIntMap a -> XIntMap a
-makeclean (XIntMap m n free h) = (XIntMap m n free h') where
+makeclean (XIntMap m n free _h) = (XIntMap m n free h') where
   h' = IntMap.keysSet m
 
